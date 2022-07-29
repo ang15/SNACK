@@ -1,51 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SnakeTail : MonoBehaviour
 {
     public Transform SnakeHead;
-    public float CircleDiameter;
-
-    private List<Transform> snakeCircles = new List<Transform>();
-    private List<Vector2> positions = new List<Vector2>();
+    public List<Rigidbody2D> snakeCircles = new List<Rigidbody2D>();
+    public bool move;
 
     private void Awake()
     {
-        positions.Add(SnakeHead.position);
+        move = true;
     }
 
     private void Update()
     {
-        float distance = ((Vector2) SnakeHead.position - positions[0]).magnitude;
-
-        if (distance > CircleDiameter)
+        
+        if (move == true)
         {
-            // Направление от старого положения головы, к новому
-            Vector2 direction = ((Vector2) SnakeHead.position - positions[0]).normalized;
-
-            positions.Insert(0, positions[0] + direction * CircleDiameter);
-            positions.RemoveAt(positions.Count - 1);
-
-            distance -= CircleDiameter;
-        }
-
-        for (int i = 0; i < snakeCircles.Count; i++)
-        {
-            snakeCircles[i].position = Vector2.Lerp(positions[i + 1], positions[i], distance / CircleDiameter);
+            move = false;
+            OnMove();
         }
     }
-
-    public void AddCircle()
+    void OnMove() 
     {
-        Transform circle = Instantiate(SnakeHead, positions[positions.Count - 1], Quaternion.identity, transform);
-        snakeCircles.Add(circle);
-        positions.Add(circle.position);
+   
+        snakeCircles[0].velocity = new Vector2(SnakeHead.position.x-snakeCircles[0].transform.position.x, snakeCircles[0].position.y) * Time.deltaTime * 1000;
+        for (int i = 1; i < snakeCircles.Count; i++)
+        {
+            snakeCircles[i].velocity = new Vector2(snakeCircles[i-1].transform.position.x - snakeCircles[i].transform.position.x, snakeCircles[i].position.y)*Time.deltaTime*1000;
+          
+        }
+        move = true;
     }
 
-    public void RemoveCircle()
-    {
-        Destroy(snakeCircles[0].gameObject);
-        snakeCircles.RemoveAt(0);
-        positions.RemoveAt(1);
-    }
 }
